@@ -11,26 +11,25 @@
 #define SHORT_PRESS 1000
 #define LONG_PRESS 2500
 #define BAUD_RATE 115200
-#define L 5
+#define STRUCT_LEN 5
 #define customService BLEUUID((uint16_t)0x1700)
 
 ESP32Time rtc(3600);
 
 //Variables Declaration
-bool BLE_flag = 1;
-bool ISR_flag = false;
 int currentState;
 int lastState = HIGH;
 unsigned long pressedTime = 0;
 unsigned long releasedTime = 0;
 bool deviceConnected = false, flag = false;
+bool BLE_flag = 1,run_once = 1;
+bool ISR_flag = false;
 
 struct Data {
   float Gforce;
   char RTC[35];   //Thursday, October 13 2022 16:24:34
   char send[43];  //016.55G Thursday, October 13 2022 16:24:34
-};
-struct Data D[L];
+} D[L];
 
 char value[49] = "NULL";  //String read from the BLE
 char input[49] = "NULL";  //String that needs to be parsed
@@ -45,8 +44,11 @@ BLEService *pService;
 BLECharacteristic customCharacteristic(BLEUUID((uint16_t)0x1A00), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
 
 class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
+
   void onWrite(BLECharacteristic *customCharacteristic) {
+
     std::string rcvString = customCharacteristic->getValue();
+
     if (rcvString.length() > 0) {
       Serial.println("Value Received from BLE: ");
       for (int i = 0; i < rcvString.length(); ++i) {
@@ -64,6 +66,7 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
 };
 
 class MyServerCallbacks : public BLEServerCallbacks {
+
   void onConnect(BLEServer *pServer) {
     deviceConnected = true;
   };
@@ -93,7 +96,6 @@ void loop() {
   //   delay(1000);
   // }
   if (ISR_flag) {
-    bleInit();
     bleSend();
   } else {
     ISR_flag = false;
@@ -117,7 +119,7 @@ void bleInit(void) {
 void gpioInit(void) {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(LED, OUTPUT);
-  attachInterrupt(ISR_PIN, isr, CHANGE);
+  attachInterrupt(ISR_PIN, isr, HIGH);
 }
 
 void bleServiceTask(void) {
@@ -145,22 +147,18 @@ void bleServiceTask(void) {
 }
 
 void bleSend(void) {
-  pService->start();
-  Serial.println("BLE SERVICE STARTED");
-  pServer->getAdvertising()->start();  //start the BLE service
-  // while (!deviceConnected){
-  //   Serial.println("Waiting for a Client . . . .");
-  // }
-  Serial.println("BLE TRANSFER STARTED");
-  while (true) {
-    for (int i = 0; i < L; i++) {
-
-      customCharacteristic.setValue((char *)&D[i].send);
-      customCharacteristic.notify();
-      delay(1000);
-    }
+  if (run_once) {
+    pService->start();
+    Serial.println("BLE SERVICE STARTED");
+    pServer->getAdvertising()->start();  //start the BLE service
+    Serial.println("BLE TRANSFER STARTED");
+    run_once = 0;
   }
-  while (true) {
-    Serial.println("In THE ISR Function :)");
+
+  for (int i = 0; i < L; i++) {
+
+    customCharacteristic.setValue((char *)&D[i].send);
+    customCharacteristic.notify();
+    delay(1000);
   }
 }
