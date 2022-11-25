@@ -29,7 +29,7 @@ struct Data {
   float Gforce;
   char RTC[35];   //Thursday, October 13 2022 16:24:34
   char send[43];  //016.55G Thursday, October 13 2022 16:24:34
-} D[L];
+} D[STRUCT_LEN];
 
 char value[49] = "NULL";  //String read from the BLE
 char input[49] = "NULL";  //String that needs to be parsed
