@@ -90,7 +90,7 @@ void setup() {
 
 void loop() {
   Serial.println("In The Loop");
-  // for (int i = 0; i < L; i++) {
+  // for (int i = 0; i < STRUCT_LEN; i++) {
   //   //strcpy(D[i].RTC, rtc.getTime("RTC: %A, %B %d %Y %H:%M:%S").c_str());
   //   strcpy(D[i].RTC,"016.55G Thursday, October 13 2022 16:24:34" );
   //   strcpy(D[i].send, D[i].RTC);
@@ -158,7 +158,7 @@ void bleSend(void) {
     run_once = 0;
   }
 
-  for (int i = 0; i < L; i++) {
+  for (int i = 0; i < STRUCT_LEN; i++) {
 
     customCharacteristic.setValue((char *)&D[i].send);
     customCharacteristic.notify();
