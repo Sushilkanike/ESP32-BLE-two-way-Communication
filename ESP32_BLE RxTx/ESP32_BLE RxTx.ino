@@ -98,7 +98,8 @@ void loop() {
   // }
   if (ISR_flag) {
     bleSend();
-  } else {
+  } 
+  else {
     ISR_flag = false;
   }
 }
