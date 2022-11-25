@@ -59,7 +59,8 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
         value[i] = NULL;
       }
       customCharacteristic->setValue((char *)&value);
-    } else {
+    } 
+    else {
       Serial.println("Empty Value Received!");
     }
   }
